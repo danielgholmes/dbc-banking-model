@@ -12,7 +12,7 @@ protected:
 
 	invariant()
 	{
-		assert(balance == depositSum + depositSum - withdrawSum - chargesSum);
+		assert(balance == depositSum - withdrawSum - chargesSum);
 	}
 
 	void withdraw(in float amount)
@@ -35,18 +35,26 @@ protected:
 	}
 }
 
-class SavingsAccount : Account
+class Savings : Account
 {
+	this(float initDeposit)
+	{
+		depositSum = initDeposit;
+		withdrawLimit = 1000.0;
+		charge = 5.0;
+		withdrawSum = 0.0;
+		chargesSum = 0.0;
+		withdrawNum = 0;
+		balance = depositSum;
+	}
+
 	override void withdraw(in float amount)
 	{
-		balance -= amount + charge;
-		withdrawSum += amount;
-		chargesSum += charge;
-		withdrawNum++;		
+
 	}
 }
 
-class StudentAccount : Account
+class Cheque : Account
 {
 	override void withdraw(in float amount)
 	in
@@ -59,10 +67,7 @@ class StudentAccount : Account
 	}
 	body
 	{
-		balance -= amount;
-		withdrawSum += amount;
-		chargesSum += charge;
-		withdrawNum++;	
+
 	}
 }
 
