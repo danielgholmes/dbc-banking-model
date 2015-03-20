@@ -1,18 +1,16 @@
 class Account
 {
-protected:
-	float balance;
-	float depositSum;
-	float withdrawSum;
-	float chargesSum;
-
-	float withdrawLimit;
-	float charge;
-	int withdrawNum;
-
-	invariant()
+public:
+	this() // constructor to initialise values
 	{
-		assert(balance == depositSum - withdrawSum - chargesSum);
+		balance = 0.0;
+		depositTotal = 0.0;
+		withdrawTotal = 0.0;
+		chargesTotal = 0.0;
+		charge = 2.0; // default amount
+		withdrawLimit = 1000.0; // default amount
+		freeWithdraw = 10;
+		withdrawCount = 0;
 	}
 
 	void withdraw(in float amount)
@@ -24,51 +22,88 @@ protected:
 	}
 	out
 	{
-		assert(withdrawNum > 0);
+		assert(withdrawCount > 0);
 	}
 	body
 	{
-		balance -= amount + charge;
-		withdrawSum += amount;
-		chargesSum += charge;
-		withdrawNum++;
+		withdrawCount++;
+		if (withdrawCount % freeWithdraw != 0)
+		{
+			balance -= amount + charge;
+			chargesTotal += charge;
+		}
+		else balance -= amount;
+
+		withdrawTotal += amount;
 	}
+
+	// other member functions ...
+
+	invariant()
+	{
+		assert(balance == depositTotal - withdrawTotal - chargesTotal);
+	}
+
+protected:
+	float balance;
+	float depositTotal;
+	float withdrawTotal;
+	float chargesTotal;
+
+	float charge;
+	float withdrawLimit;
+	int withdrawCount;
+
+private:
+	float freeWithdraw;
+
+	// other member functions ...
 }
 
 class Savings : Account
 {
-	this(float initDeposit)
-	{
-		depositSum = initDeposit;
-		withdrawLimit = 1000.0;
-		charge = 5.0;
-		withdrawSum = 0.0;
-		chargesSum = 0.0;
-		withdrawNum = 0;
-		balance = depositSum;
-	}
-
-	override void withdraw(in float amount)
-	{
-
-	}
-}
-
-class Cheque : Account
-{
-	override void withdraw(in float amount)
+public:
+	this(in float initDeposit)
 	in
 	{
-		assert(amount <= balance); // weakening of precondition, no withdraw charges
+		assert(initDeposit > 100.0);
 	}
-	out
+	out 
 	{
-		assert(withdrawNum < 10); // strengthening of postcondition, limit on withdrawals
+		assert(balance == initDeposit);
 	}
 	body
 	{
-
+		depositTotal = initDeposit;
+		withdrawLimit = 0.0;
+		charge = 10.0;
+		withdrawTotal = 0.0;
+		chargesTotal = 0.0;
+		withdrawCount = 0;
+		balance = depositTotal;
 	}
+
+	override void withdraw(in float amount)
+	in
+	{
+		assert(amount > 0.0);
+		assert(amount <= balance + charge); // weakening of preconditions
+	}
+	out
+	{
+		assert(withdrawCount > 0);	
+		assert(withdrawTotal > amount);
+		assert(chargesTotal % charge == 0); // strengthening of postconditions
+	}
+	body
+	{
+		balance -= amount + charge;
+		withdrawTotal += amount;
+		chargesTotal += charge;
+		withdrawCount++;		
+	}
+
+	// other member functions ...
 }
 
 import std.stdio;
