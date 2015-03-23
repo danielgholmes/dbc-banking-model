@@ -6,6 +6,7 @@ public:
 		balance = 0.0;
 		depositTotal = 0.0;
 		withdrawTotal = 0.0;
+		prevWithdrawTotal = 0.0;
 		chargesTotal = 0.0;
 		charge = 2.0; // default amount
 		withdrawLimit = 1000.0; // default amount
@@ -23,9 +24,11 @@ public:
 	out
 	{
 		assert(withdrawCount > 0);
+		assert(withdrawTotal == prevWithdrawTotal + amount);
 	}
 	body
 	{
+		prevWithdrawTotal = withdrawTotal;
 		withdrawCount++;
 		if (withdrawCount % freeWithdraw != 0)
 		{
@@ -48,6 +51,7 @@ protected:
 	float balance;
 	float depositTotal;
 	float withdrawTotal;
+	float prevWithdrawTotal;
 	float chargesTotal;
 
 	float charge;
@@ -76,6 +80,7 @@ public:
 	{
 		depositTotal = initDeposit;
 		withdrawLimit = 0.0;
+		prevWithdrawTotal = 0.0;
 		charge = 10.0;
 		withdrawTotal = 0.0;
 		chargesTotal = 0.0;
@@ -92,15 +97,18 @@ public:
 	out
 	{
 		assert(withdrawCount > 0);	
-		assert(withdrawTotal > amount);
+		assert(withdrawTotal == prevWithdrawTotal + amount);
 		assert(chargesTotal % charge == 0); // strengthening of postconditions
 	}
 	body
 	{
+		prevWithdrawTotal = withdrawTotal;
 		balance -= amount + charge;
 		withdrawTotal += amount;
 		chargesTotal += charge;
-		withdrawCount++;		
+		withdrawCount++;
+		writeln("Balance : ");
+		writeln(balance);
 	}
 
 	// other member functions ...
@@ -111,7 +119,11 @@ import std.c.stdlib;
 
 int main(string[] argv)
 {
-    writeln("Hello D-World!");
+    writeln("Program start \n");
+
+	auto savingsAccount = new Savings(200);
+	savingsAccount.withdraw(50);
+
     system("PAUSE");
     return 0;
 }
